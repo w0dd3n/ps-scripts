@@ -1,7 +1,6 @@
 ﻿Write-Host "########################################"
 Write-Host " PS Script - Host Information gathering"
 Write-Host " "
-Write-Host " @Author  - <cobejero.ext@simplon.co>"
 Write-Host " @Date    - Jan, 4th 2024"
 Write-Host " @Licence - GPL Open Source"
 Write-Host " "
