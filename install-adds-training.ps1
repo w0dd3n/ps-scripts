@@ -11,26 +11,10 @@ $DomainName = "b3car.rns.aftec.fr"
 $DomainPath = "DC=b3car,DC=rns,DC=aftec,DC=fr"
 $DomainNetbiosName = "B3CAR-RNS"
 $SafeModePassword = ConvertTo-SecureString "Azerty!1234" -AsPlainText -Force
-$DomainAdminUsername = "Administrator"
+$DomainAdminUsername = "Administrateur"
 $DomainAdminPassword = ConvertTo-SecureString "Azerty!1234" -AsPlainText -Force
 $LocalAdminPassword = ConvertTo-SecureString "Azerty!1234" -AsPlainText -Force
-$Departments = @(
-    @{OU = "Direction"; Prefix = "D"},
-    @{OU = "Administration"; Prefix = "A"},
-    @{OU = "Pedagogie"; Prefix = "P"},
-    @{OU = "Apprenants"; Prefix = "E"},
-    @{OU = "Informatique"; Prefix = "I"}
-)
-$ITDepartmentName="Informatique"
-$ITDepartmentPrefix="I"
-$DefaultUserPassword = ConvertTo-SecureString "Azerty!1234" -AsPlainText -Force
 $ShareDrive="D:\"
-$SharesParam = @(
-    @{ShareName = "Commun"; SharePath="D:\Commun"; GroupRead="GP_Commun_Read"; GroupWrite="GP_Commun_Write"},
-    @{ShareName = "Administration"; SharePath="D:\Administration"; GroupRead="GP_Admin_Read"; GroupWrite="GP_Admin_Write"},
-    @{ShareName = "Apprenants"; SharePath="D:\Apprenants"; GroupRead="GP_Apprenants_Read"; GroupWrite="GP_Apprenants_Write"},
-    @{ShareName = "Technique"; SharePath="D:\Technique"; GroupRead="GP_Technique_Read"; GroupWrite="GP_Technique_Write"}
-)
 
 ## GLOBAL VARIABLES
 
