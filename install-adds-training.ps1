@@ -10,10 +10,10 @@
 $DomainName = "b3car.rns.aftec.fr"
 $DomainPath = "DC=b3car,DC=rns,DC=aftec,DC=fr"
 $DomainNetbiosName = "B3CAR-RNS"
-$SafeModePassword = ConvertTo-SecureString "azerty1234" -AsPlainText -Force
+$SafeModePassword = ConvertTo-SecureString "Azerty!1234" -AsPlainText -Force
 $DomainAdminUsername = "Administrator"
-$DomainAdminPassword = ConvertTo-SecureString "azerty1234" -AsPlainText -Force
-$LocalAdminPassword = ConvertTo-SecureString "azerty1234" -AsPlainText -Force
+$DomainAdminPassword = ConvertTo-SecureString "Azerty!1234" -AsPlainText -Force
+$LocalAdminPassword = ConvertTo-SecureString "Azerty!1234" -AsPlainText -Force
 $Departments = @(
     @{OU = "Direction"; Prefix = "D"},
     @{OU = "Administration"; Prefix = "A"},
@@ -23,7 +23,7 @@ $Departments = @(
 )
 $ITDepartmentName="Informatique"
 $ITDepartmentPrefix="I"
-$DefaultUserPassword = ConvertTo-SecureString "azerty1234" -AsPlainText -Force
+$DefaultUserPassword = ConvertTo-SecureString "Azerty!1234" -AsPlainText -Force
 $ShareDrive="D:\"
 $SharesParam = @(
     @{ShareName = "Commun"; SharePath="D:\Commun"; GroupRead="GP_Commun_Read"; GroupWrite="GP_Commun_Write"},
