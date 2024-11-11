@@ -37,83 +37,44 @@ $SharesParam = @(
 [string]$Date = Get-Date -Format "ddMMyyyy"
 [string]$Hour = Get-Date -Format "HHmm"
 
-[string]$Err_Msg_ServicesStatus = "[ ERROR ] The script has stopped, required service $ServiceName isn't running"
-[string]$Err_Msg_SysvolStatus   = "[ ERROR ] The SYSVOL folder doesn't exist"
 [string]$Err_Msg_ShareDrive     = "[ ERROR ] Shares Partition doesn't exist"
+[string]$Err_Msg_ADFeature      = "[ ERROR ] AD DS Role installation FAILED"
 
-[string]$Inf_Msg_ServicesStatus = "[ INFO ] Service $Name is running"
-[string]$Inf_Msg_Sysvol         = "[ INFO ] The SYSVOL folder ready to setup AD DS"
 [string]$Inf_Msg_ShareDrive     = "[ INFO ] Shares Partition ready to setup AD DS"
+[string]$Inf_Msg_ADFeature      = "[ INFO ] AD DS Role installation SUCCESS"
 
 
-# Check services required for AD DS installation
-function Check-ServicesStatus {
-    $requiredServices = @('adws', 'kdc', 'netlogon', 'dns')
-
-    foreach ($serviceName in $requiredServices) {
-        try {
-            $service = Get-Service -Name $serviceName -ErrorAction Stop
-
-            if ($service.Status -eq 'Running') {
-                Write-Output $Inf_Msg_ServicesStatus.Replace('$ServiceName', $serviceName)
-            } else {
-                Write-Output $Err_Msg_ServicesStatus.Replace('$ServiceName', $serviceName)
-            }
-        }
-        catch {
-            Write-Output $Err_Msg_ServicesStatus.Replace('$ServiceName', $serviceName)
-        }
-    }
-}
-
-# Check environment prerequisite for AD DS installation
-function Check-EnvStatus {
-    # Validate SYSVOL availability
-    $Path = "C:\Windows\SYSVOL"
-    if (Test-Path -Path $Path) {
-        Write-Output $Inf_Msg_SysvolStatus
-    } else {
-        throw $Err_Msg_SysvolStatus
-    }
-
-    # Validate Shares Partition Drive availability
-    if (Test-Path -Path $ShareDrive) {
-        Write-Output $Inf_Msg_ShareDrive
-    } else {
-        throw $Err_Msg_ShareDriveStatus
-    }
-
-    try {
-        Import-Module ActiveDirectory -ErrorAction Stop
-    } catch {
-        $mess = "`n[ ERROR ] $_"
-        Write-Output $mess
-    }
-}
-
-<#
-    SCRIPT MAIN SECTION
-#>
+## SCRIPT MAIN SECTION
 
 Start-Transcript -Path C:\AD_config_log_$Date`_$Hour.txt `
                  -Append `
                  -IncludeInvocationHeader
 
-Check-ServicesStatus "adws,kdc,netlogon,dns"
-
-Check-EnvStatus
+# Validate Shares Partition Drive availability
+if (Test-Path -Path $ShareDrive) {
+    Write-Output $Inf_Msg_ShareDrive
+} else {
+    Write-Output $Err_Msg_ShareDrive
+}
 
 # Setup AD DS role if not installed
 Install-WindowsFeature -name AD-Domain-Services -IncludeManagementTools -IncludeAllSubFeature
+if ((Get-WindowsFeature -Name AD-Domain-Services).Installed -eq $true) {
+    Write-Output $Inf_Msg_ADFeature
+} else {
+    Write-Output $Err_Msg_ADFeature
+    Stop-Transcript
+    exit
+}
 
 # Promote server as domain controler
 Install-ADDSForest `
   -DomainName $DomainName `
   -CreateDnsDelegation:$false `
   -DatabasePath "C:\Windows\NTDS" `
-  -DomainMode "7" `
+  -DomainMode "Win2016" `
   -DomainNetbiosName $DomainNetbiosName `
-  -ForestMode "7" `
+  -ForestMode "Win2016" `
   -InstallDns:$true `
   -LogPath "C:\Windows\NTDS" `
   -NoRebootOnCompletion:$True `
