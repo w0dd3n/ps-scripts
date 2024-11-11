@@ -52,7 +52,7 @@ $SharesParam = @(
 function Check-ServicesStatus
 {
     Param(
-    [Parameter(Mandatory=$True,HelpMessage=$Help_Msg_Param_ServicesStatus)]
+    [Parameter(Mandatory,HelpMessage=$Help_Msg_Param_ServicesStatus)]
     [string]
     $ServicesNames
     )
