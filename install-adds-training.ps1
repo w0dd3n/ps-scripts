@@ -85,9 +85,8 @@ Install-ADDSForest `
   -SafeModeAdministratorPassword $SafeModePassword `
   -Force:$true
 
-Restart-Computer
-
 # End of logging in file
 Stop-Transcript
+Restart-Computer
 
 ## EOF ##
