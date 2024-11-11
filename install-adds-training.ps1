@@ -75,9 +75,9 @@ Install-ADDSForest `
   -DomainName $DomainName `
   -CreateDnsDelegation:$false `
   -DatabasePath "C:\Windows\NTDS" `
-  -DomainMode "Win2016" `
+  -DomainMode "7" `
   -DomainNetbiosName $DomainNetbiosName `
-  -ForestMode "Win2016" `
+  -ForestMode "7" `
   -InstallDns:$true `
   -LogPath "C:\Windows\NTDS" `
   -NoRebootOnCompletion:$True `
