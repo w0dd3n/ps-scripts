@@ -25,10 +25,10 @@ $Departments = @(
 [string]$DefaultUserPassword = ConvertTo-SecureString "azerty1234" -AsPlainText -Force
 [string]$ShareDrive="D:\"
 $SharesParam = @(
-    @{ShareName = "Commun", SharePath="D:\Commun", GroupRead="GP_Commun_Read", GroupWrite="GP_Commun_Write"},
-    @{ShareName = "Administration", SharePath="D:\Administration", GroupRead="GP_Admin_Read", GroupWrite="GP_Admin_Write"},
-    @{ShareName = "Apprenants", SharePath="D:\Apprenants", GroupRead="GP_Apprenants_Read", GroupWrite="GP_Apprenants_Write"},
-    @{ShareName = "Technique", SharePath="D:\Technique", GroupRead="GP_Technique_Read", GroupWrite="GP_Technique_Write"}
+    @{ShareName = "Commun"; SharePath="D:\Commun"; GroupRead="GP_Commun_Read"; GroupWrite="GP_Commun_Write"},
+    @{ShareName = "Administration"; SharePath="D:\Administration"; GroupRead="GP_Admin_Read"; GroupWrite="GP_Admin_Write"},
+    @{ShareName = "Apprenants"; SharePath="D:\Apprenants"; GroupRead="GP_Apprenants_Read"; GroupWrite="GP_Apprenants_Write"},
+    @{ShareName = "Technique"; SharePath="D:\Technique"; GroupRead="GP_Technique_Read"; GroupWrite="GP_Technique_Write"}
 )
 
 ## GLOBAL VARIABLES
@@ -37,9 +37,7 @@ $SharesParam = @(
 [string]$Date = Get-Date -Format "ddMMyyyy"
 [string]$Hour = Get-Date -Format "HHmm"
 
-[string]$Hlp_Msg_Param_ServicesStatus = "Expect a string with a list of services names separated by comma."
-
-[string]$Err_Msg_ServicesStatus = "[ ERROR ] The script has stopped, required service $Name isn't running"
+[string]$Err_Msg_ServicesStatus = "[ ERROR ] The script has stopped, required service $ServiceName isn't running"
 [string]$Err_Msg_SysvolStatus   = "[ ERROR ] The SYSVOL folder doesn't exist"
 [string]$Err_Msg_ShareDrive     = "[ ERROR ] Shares Partition doesn't exist"
 
@@ -49,53 +47,39 @@ $SharesParam = @(
 
 
 # Check services required for AD DS installation
-function Check-ServicesStatus
-{
-    Param(
-    [Parameter(Mandatory,HelpMessage=$Help_Msg_Param_ServicesStatus)]
-    [string]
-    $ServicesNames
-    )
+function Check-ServicesStatus {
+    $requiredServices = @('adws', 'kdc', 'netlogon', 'dns')
 
-    $Services = Get-Service $ServicesNames
-    foreach ($Service in $Services)
-    {
-        $Status = $Service.status
-        $Name = $Service.name
+    foreach ($serviceName in $requiredServices) {
+        try {
+            $service = Get-Service -Name $serviceName -ErrorAction Stop
 
-        if ($Status -eq "running")
-        {
-            Write-Output $Inf_Msg_ServicesStatus
+            if ($service.Status -eq 'Running') {
+                Write-Output $Inf_Msg_ServicesStatus.Replace('$ServiceName', $serviceName)
+            } else {
+                Write-Output $Err_Msg_ServicesStatus.Replace('$ServiceName', $serviceName)
+            }
         }
-        else
-        {
-            throw $Err_Msg_ServicesStatus
+        catch {
+            Write-Output $Err_Msg_ServicesStatus.Replace('$ServiceName', $serviceName)
         }
     }
-
 }
 
 # Check environment prerequisite for AD DS installation
-function Check-EnvStatus
-{
+function Check-EnvStatus {
     # Validate SYSVOL availability
     $Path = "C:\Windows\SYSVOL"
-    if (Test-Path -Path $Path)
-    {
+    if (Test-Path -Path $Path) {
         Write-Output $Inf_Msg_SysvolStatus
-    }
-    else
-    {
+    } else {
         throw $Err_Msg_SysvolStatus
     }
 
     # Validate Shares Partition Drive availability
-    if (Test-Path -Path $ShareDrive)
-    {
-        Write-Output $Inf_Msg_ShareDriveStatus
-    }
-    else
-    {
+    if (Test-Path -Path $ShareDrive) {
+        Write-Output $Inf_Msg_ShareDrive
+    } else {
         throw $Err_Msg_ShareDriveStatus
     }
 
@@ -146,16 +130,14 @@ Start-Sleep -Seconds 60
 $Credential = New-Object System.Management.Automation.PSCredential ($DomainAdminUsername, $DomainAdminPassword)
 
 # Create OUs for each department of the company
-foreach ($department in $Departments)
-{
+foreach ($department in $Departments) {
     New-ADOrganizationalUnit -Name $department.OU `
                              -Path $DomainPath `
                              -Credential $Credential
 }
 
 # Create users and computers in every OU
-foreach ($department in $Departments)
-{
+foreach ($department in $Departments) {
     $OU = $department.OU
     $Prefix = $department.Prefix
 
