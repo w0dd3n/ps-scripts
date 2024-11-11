@@ -1,5 +1,6 @@
 <#
-    Powershell script to setup and populate ADDS server for training purpose
+    Powershell script to setup and ADDS server for training purpose
+    Requires D:\ drive to be setup on server
 
     Date - 2024/11/08
 #>
@@ -55,6 +56,8 @@ if (Test-Path -Path $ShareDrive) {
     Write-Output $Inf_Msg_ShareDrive
 } else {
     Write-Output $Err_Msg_ShareDrive
+    Stop-Transcript
+    exit
 }
 
 # Setup AD DS role if not installed
@@ -83,113 +86,6 @@ Install-ADDSForest `
   -Force:$true
 
 Restart-Computer
-
-# Wait the time server to be up and running
-Start-Sleep -Seconds 60
-
-# Connect as domain admin
-$Credential = New-Object System.Management.Automation.PSCredential ($DomainAdminUsername, $DomainAdminPassword)
-
-# Create OUs for each department of the company
-foreach ($department in $Departments) {
-    New-ADOrganizationalUnit -Name $department.OU `
-                             -Path $DomainPath `
-                             -Credential $Credential
-}
-
-# Create users and computers in every OU
-foreach ($department in $Departments) {
-    $OU = $department.OU
-    $Prefix = $department.Prefix
-
-    for ($i = 1; $i -le 5; $i++) {
-        $username = "$Prefix-User$i"
-        $firstname = "$Prefix User $i"
-        $lastname = "$OU"
-        $userPrincipalName = "$username@$DomainName"
-        $password = $DefaultUserPassword
-
-        New-ADUser  -SamAccountName $username `
-                    -UserPrincipalName $userPrincipalName `
-                    -Name "$firstname $lastname" `
-                    -GivenName $firstname `
-                    -Surname $lastname `
-                    -Path "OU=$OU,$DomainPath" `
-                    -AccountPassword $password `
-                    -Enabled $true `
-                    -PassThru -Credential $Credential
-
-        Add-ADGroupMember -Identity "Domain Users" `
-                          -Members $username `
-                          -Credential $Credential
-
-        # Create a computer for each user (computer name = "LAPTOP-<username>")
-        $computerName = "LAPTOP-$username"
-        New-ADComputer  -Name $computerName `
-                        -Path "OU=$OU,$DomainPath" `
-                        -Credential $Credential
-
-        Set-ADComputer  -Identity $computerName `
-                        -Description "$username's computer" `
-                        -UserPrincipalName $userPrincipalName `
-                        -Credential $Credential
-    }
-
-    # Prepare specific admin accounts for IT department
-    if ($OU -eq $ITDepartmentName) {
-        for ($i = 1; $i -le 5; $i++) {
-            $adminUsername = "ITAdmin$i"
-            $firstname = "$ITDepartmentName Admin $i"
-            $lastname = "$ITDepartmentName"
-            $userPrincipalName = "$adminUsername@$DomainName"
-            $password = $LocalAdminPassword
-
-            New-ADUser  -SamAccountName $adminUsername `
-                        -UserPrincipalName $userPrincipalName `
-                        -Name "$firstname $lastname" `
-                        -GivenName $firstname `
-                        -Surname $lastname `
-                        -Path "OU=$OU,$DomainPath" `
-                        -AccountPassword $password `
-                        -Enabled $true `
-                        -PassThru -Credential $Credential
-
-            Add-ADGroupMember   -Identity "Domain Admins" `
-                                -Members $adminUsername `
-                                -Credential $Credential
-            Add-ADGroupMember   -Identity "Administrators" `
-                                -Members $adminUsername `
-                                -Credential $Credential
-
-            $adminComputerName = "LAPTOP-$adminUsername"
-            New-ADComputer  -Name $adminComputerName `
-                            -Path "OU=$OU,$DomainPath" `
-                            -Credential $Credential
-
-            Set-ADComputer  -Identity $adminComputerName `
-                            -Description "$adminUsername's computer" `
-                            -UserPrincipalName $userPrincipalName `
-                            -Credential $Credential
-        }
-    }
-}
-
-# Create shared directories and prepare shares with default access
-foreach ($share in $SharesParam) {
-    New-Item -ItemType directory -Path $ShareDrive -Name $share.ShareName
-    New-SmbShare -Name $share.ShareName `
-                 -Path $share.SharePath `
-                 -FullAccess "Tout le monde"
-    New-ADGroup  -Name $share.GroupRead `
-                 -Path "OU=Groupe,OU=$ITDepartmentName,$DomainPath" `
-                 -GroupScope DomainLocal
-    New-ADGroup  -Name $share.GroupWrite `
-                 -Path "OU=Groupe,OU=$ITDepartmentName,$DomainPath" `
-                 -GroupScope DomainLocal
-}
-
-# Create service Groups
-# TODO - TO BE CONTINUED
 
 # End of logging in file
 Stop-Transcript
