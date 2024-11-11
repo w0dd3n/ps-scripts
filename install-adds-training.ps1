@@ -7,13 +7,13 @@
 
 ## CONFIGURATION VARIABLES
 
-[string]$DomainName = "b3car.rns.aftec.fr"
-[string]$DomainPath = "DC=b3car,DC=rns,DC=aftec,DC=fr"
-[string]$DomainNetbiosName = "B3CAR-RNS"
-[string]$SafeModePassword = ConvertTo-SecureString "azerty1234" -AsPlainText -Force
-[string]$DomainAdminUsername = "Administrator"
-[string]$DomainAdminPassword = ConvertTo-SecureString "azerty1234" -AsPlainText -Force
-[string]$LocalAdminPassword = ConvertTo-SecureString "azerty1234" -AsPlainText -Force
+$DomainName = "b3car.rns.aftec.fr"
+$DomainPath = "DC=b3car,DC=rns,DC=aftec,DC=fr"
+$DomainNetbiosName = "B3CAR-RNS"
+$SafeModePassword = ConvertTo-SecureString "azerty1234" -AsPlainText -Force
+$DomainAdminUsername = "Administrator"
+$DomainAdminPassword = ConvertTo-SecureString "azerty1234" -AsPlainText -Force
+$LocalAdminPassword = ConvertTo-SecureString "azerty1234" -AsPlainText -Force
 $Departments = @(
     @{OU = "Direction"; Prefix = "D"},
     @{OU = "Administration"; Prefix = "A"},
@@ -21,10 +21,10 @@ $Departments = @(
     @{OU = "Apprenants"; Prefix = "E"},
     @{OU = "Informatique"; Prefix = "I"}
 )
-[string]$ITDepartmentName="Informatique"
-[string]$ITDepartmentPrefix="I"
-[string]$DefaultUserPassword = ConvertTo-SecureString "azerty1234" -AsPlainText -Force
-[string]$ShareDrive="D:\"
+$ITDepartmentName="Informatique"
+$ITDepartmentPrefix="I"
+$DefaultUserPassword = ConvertTo-SecureString "azerty1234" -AsPlainText -Force
+$ShareDrive="D:\"
 $SharesParam = @(
     @{ShareName = "Commun"; SharePath="D:\Commun"; GroupRead="GP_Commun_Read"; GroupWrite="GP_Commun_Write"},
     @{ShareName = "Administration"; SharePath="D:\Administration"; GroupRead="GP_Admin_Read"; GroupWrite="GP_Admin_Write"},
@@ -35,15 +35,14 @@ $SharesParam = @(
 ## GLOBAL VARIABLES
 
 # Prepare log file to keep track of setup process
-[string]$Date = Get-Date -Format "ddMMyyyy"
-[string]$Hour = Get-Date -Format "HHmm"
+$Date = Get-Date -Format "ddMMyyyy"
+$Hour = Get-Date -Format "HHmm"
 
-[string]$Err_Msg_ShareDrive     = "[ ERROR ] Shares Partition doesn't exist"
-[string]$Err_Msg_ADFeature      = "[ ERROR ] AD DS Role installation FAILED"
+$Err_Msg_ShareDrive     = "[ ERROR ] Shares Partition doesn't exist"
+$Err_Msg_ADFeature      = "[ ERROR ] AD DS Role installation FAILED"
 
-[string]$Inf_Msg_ShareDrive     = "[ INFO ] Shares Partition ready to setup AD DS"
-[string]$Inf_Msg_ADFeature      = "[ INFO ] AD DS Role installation SUCCESS"
-
+$Inf_Msg_ShareDrive     = "[ INFO ] Shares Partition ready to setup AD DS"
+$Inf_Msg_ADFeature      = "[ INFO ] AD DS Role installation SUCCESS"
 
 ## SCRIPT MAIN SECTION
 
