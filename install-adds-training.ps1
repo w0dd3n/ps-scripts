@@ -148,5 +148,9 @@ function Install-ADDomainControler {
 ## FUNCTION - Build up AD environment with users, computers and shares
 ##
 function Set-ADTopology {
+    Unregister-ScheduledTask -TaskName $TaskInstallName -Confirm:$false
 
+    Write-Output "TODO - To be continued"
+
+    Stop-Transcript
 }
