@@ -111,16 +111,16 @@ function Install-ADDomainControler {
     Write-Output "[ INFO ] Installing Domain Controler ..."
     Import-Module ADDSDeployment
     Install-ADDSForest -DatabasePath 'C:\Windows\NTDS' `
-                       -DomainMode = 'Default' `
-                       -DomainName = $DomainNameDNS `
-                       -DomainNetbiosName = $DomainNameNetbios `
-                       -ForestMode = 'Default' `
-                       -InstallDns = $true `
-                       -LogPath = 'C:\Windows\NTDS' `
-                       -NoRebootOnCompletion = $false `
-                       -SysvolPath = C:\Windows\SYSVOL `
-                       -SafeModeAdministratorPassword = $SafeModeAdministratorPassword `
-                       -Force = $true `
+                       -DomainMode 'Default' `
+                       -DomainName $DomainNameDNS `
+                       -DomainNetbiosName $DomainNameNetbios `
+                       -ForestMode 'Default' `
+                       -InstallDns $true `
+                       -LogPath 'C:\Windows\NTDS' `
+                       -NoRebootOnCompletion:$false `
+                       -SysvolPath 'C:\Windows\SYSVOL' `
+                       -SafeModeAdministratorPassword $SafeModeAdministratorPassword `
+                       -Force:$true `
                        -CreateDnsDelegation = $false
     Write-Output "[ INFO ] Installing Domain Controler ... DONE"
 
