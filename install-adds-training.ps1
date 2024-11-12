@@ -115,13 +115,13 @@ function Install-ADDomainControler {
                        -DomainName $DomainNameDNS `
                        -DomainNetbiosName $DomainNameNetbios `
                        -ForestMode 'Default' `
-                       -InstallDns $true `
+                       -InstallDns:$true `
                        -LogPath 'C:\Windows\NTDS' `
                        -NoRebootOnCompletion:$false `
                        -SysvolPath 'C:\Windows\SYSVOL' `
                        -SafeModeAdministratorPassword $SafeModeAdministratorPassword `
                        -Force:$true `
-                       -CreateDnsDelegation = $false
+                       -CreateDnsDelegation:$false
     Write-Output "[ INFO ] Installing Domain Controler ... DONE"
 
     Stop-Transcript
