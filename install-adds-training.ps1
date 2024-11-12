@@ -97,6 +97,17 @@ function Install-ADDomainControler {
         }
     }
 
+    Write-Output "[ INFO ] Preparing task to continue setup after reboot ..."
+    $taskAction = New-ScheduledTaskAction -Execute "Powershell.exe" `
+                                          -Argument "-File $PSCommandPath -Argument Config"
+    Register-ScheduledTask -Action $TaskAction `
+                           -Principal $TaskPrincipal `
+                           -Trigger $TaskTrigger `
+                           -Settings $TaskSettings `
+                           -TaskName $TaskInstallName
+    Write-Output "[ INFO ] Preparing task to continue setup after reboot ... DONE"
+
+
     Write-Output "[ INFO ] Installing Domain Controler ..."
     Import-Module ADDSDeployment
     Install-ADDSForest -DatabasePath 'C:\Windows\NTDS' `
@@ -106,26 +117,14 @@ function Install-ADDomainControler {
                        -ForestMode = 'Default' `
                        -InstallDns = $true `
                        -LogPath = 'C:\Windows\NTDS' `
-                       -NoRebootOnCompletion = $true `
+                       -NoRebootOnCompletion = $false `
                        -SysvolPath = C:\Windows\SYSVOL `
                        -SafeModeAdministratorPassword = $SafeModeAdministratorPassword `
                        -Force = $true `
                        -CreateDnsDelegation = $false
     Write-Output "[ INFO ] Installing Domain Controler ... DONE"
 
-    Write-Output "Preparing task to continue setup after reboot ..."
-    $taskAction = New-ScheduledTaskAction -Execute "Powershell.exe" `
-                                          -Argument "-File $PSCommandPath -Argument Config"
-    Register-ScheduledTask -Action $TaskAction `
-                           -Principal $TaskPrincipal `
-                           -Trigger $TaskTrigger `
-                           -Settings $TaskSettings `
-                           -TaskName $TaskInstallName
-    Write-Output "Preparing task to continue setup after reboot ... DONE"
-
     Stop-Transcript
-
-    Restart-Computer
 }
 
 ## FUNCTION - Build up AD environment with users, computers and shares
@@ -158,3 +157,4 @@ switch ($Argument)  {
         Stop-Transcript
     }
 }
+
