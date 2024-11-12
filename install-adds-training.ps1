@@ -5,6 +5,14 @@
     Date 2024/11/12
 #>
 
+## MAIN SCRIPT CALL SECTION
+##
+param(
+    [Parameter(Mandatory=$true)]
+    [ValidateSet('Setenv','Install','Config')]
+    [string]$Argument
+)
+
 ## AD CONFIGURATION PARAMETERS
 $ServerName = "ADDS-B3CAR-SRV"
 $ServerIPAddress = "10.0.2.254"
@@ -30,31 +38,6 @@ $TaskSettings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopI
 $TaskPrincipal = New-ScheduledTaskPrincipal -UserId "SYSTEM" -LogonType ServiceAccount
 $TaskInstallName = "INSTALL-ADDS-TASK"
 
-## MAIN SCRIPT
-
-param(
-    [Parameter(Mandatory=$true)]
-    [ValidateSet('Setenv','Install','Config')]
-    [string]$Argument
-)
-
-Start-Transcript -Path $ScriptLogfilePath -Append -IncludeInvocationHeader
-
-switch ($Argument)  {
-    "Setenv" {
-        Set-ServerEnvironment
-    }
-    "Install" {
-        Install-ADDomainControler
-    }
-    "Config" {
-        Set-ADTopology
-    }
-    default {
-        Write-Output "[ ERROR ] Valid argument list : 'Setenv','Install','Config'"
-        Stop-Transcript
-    }
-}
 
 ## FUNCTION - Setting local server environment
 ##
@@ -153,4 +136,25 @@ function Set-ADTopology {
     Write-Output "TODO - To be continued"
 
     Stop-Transcript
+}
+
+## MAIN SCRIPT CORE SECTION
+##
+
+Start-Transcript -Path $ScriptLogfilePath -Append -IncludeInvocationHeader
+
+switch ($Argument)  {
+    "Setenv" {
+        Set-ServerEnvironment
+    }
+    "Install" {
+        Install-ADDomainControler
+    }
+    "Config" {
+        Set-ADTopology
+    }
+    default {
+        Write-Output "[ ERROR ] Valid argument list : 'Setenv','Install','Config'"
+        Stop-Transcript
+    }
 }
