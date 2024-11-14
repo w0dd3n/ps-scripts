@@ -180,66 +180,67 @@ function Set-ADTopology {
 
     # Create users and computers in every OU
     foreach ($Department in $Departments) {
-    $UsersOU = "$department.OU,$DomainUsersOU"
-    $ComputersOU = "$department.OU,$DomainComputersOU"
-    $Prefix = $Department.Prefix
+        $UsersOU = "$department.OU,$DomainUsersOU"
+        $ComputersOU = "$department.OU,$DomainComputersOU"
+        $Prefix = $Department.Prefix
 
-    for ($i = 1; $i -le 5; $i++) {
-        $Username = "$Prefix-User$i"
-        $Firstname = "$Prefix User $i"
-        $Lastname = "$Department.OU"
-        $UserPrincipalName = "$Username@$DomainName"
-        $Password = $DefaultUserPassword
+        for ($i = 1; $i -le 5; $i++) {
+            $Username = "$Prefix-User$i"
+            $Firstname = "$Prefix User $i"
+            $Lastname = "$Department.OU"
+            $UserPrincipalName = "$Username@$DomainName"
+            $Password = $DefaultUserPassword
 
-        New-ADUser  -SamAccountName $Username `
-                    -UserPrincipalName $UserPrincipalName `
-                    -Name "$Firstname $Lastname" `
-                    -GivenName $Firstname `
-                    -Surname $Lastname `
-                    -Path $UsersOU `
-                    -AccountPassword $Password `
-                    -Enabled:$true `
-                    -PassThru -Credential $Credential
-
-        # Create a computer for each user (computer name = "LAPTOP-<username>")
-        $ComputerName = "LAPTOP-$username"
-        New-ADComputer  -Name $ComputerName `
-                        -Path "OU=$ComputersOU,$DomainPath" `
-                        -Credential $Credential
-
-        Set-ADComputer  -Identity $ComputerName `
-                        -Description "Computer of $Username" `
+            New-ADUser  -SamAccountName $Username `
                         -UserPrincipalName $UserPrincipalName `
-                        -Credential $Credential
+                        -Name "$Firstname $Lastname" `
+                        -GivenName $Firstname `
+                        -Surname $Lastname `
+                        -Path $UsersOU `
+                        -AccountPassword $Password `
+                        -Enabled:$true `
+                        -PassThru -Credential $Credential
 
-        # Prepare specific admin accounts for IT department
-        if ($OU -eq $ITDepartmentName) {
-            for ($i = 1; $i -le 5; $i++) {
-                $AdminUsername = "ITAdmin$i"
-                $Firstname = "$ITDepartmentName Admin $i"
-                $Lastname = "$ITDepartmentName"
-                $UserPrincipalName = "$AdminUsername@$DomainName"
-                $Password = $LocalAdminPassword
+            # Create a computer for each user (computer name = "LAPTOP-<username>")
+            $ComputerName = "LAPTOP-$username"
+            New-ADComputer  -Name $ComputerName `
+                            -Path "OU=$ComputersOU,$DomainPath" `
+                            -Credential $Credential
 
-                New-ADUser  -SamAccountName $AdminUsername `
+            Set-ADComputer  -Identity $ComputerName `
+                            -Description "Computer of $Username" `
                             -UserPrincipalName $UserPrincipalName `
-                            -Name "$Firstname $Lastname" `
-                            -GivenName $Firstname `
-                            -Surname $Lastname `
-                            -Path "OU=$UsersOU,$DomainPath" `
-                            -AccountPassword $Password `
-                            -Enabled:$true `
-                            -PassThru -Credential $Credential
+                            -Credential $Credential
 
-                $AdminComputerName = "LAPTOP-$AdminUsername"
-                New-ADComputer  -Name $adminComputerName `
-                                -Path "OU=$UsersOU,$DomainPath" `
-                                -Credential $Credential
+            # Prepare specific admin accounts for IT department
+            if ($OU -eq $ITDepartmentName) {
+                for ($i = 1; $i -le 5; $i++) {
+                    $AdminUsername = "ITAdmin$i"
+                    $Firstname = "$ITDepartmentName Admin $i"
+                    $Lastname = "$ITDepartmentName"
+                    $UserPrincipalName = "$AdminUsername@$DomainName"
+                    $Password = $LocalAdminPassword
 
-                Set-ADComputer  -Identity $AdminComputerName `
-                                -Description "Computer of $AdminUsername" `
+                    New-ADUser  -SamAccountName $AdminUsername `
                                 -UserPrincipalName $UserPrincipalName `
-                                -Credential $Credential
+                                -Name "$Firstname $Lastname" `
+                                -GivenName $Firstname `
+                                -Surname $Lastname `
+                                -Path "OU=$UsersOU,$DomainPath" `
+                                -AccountPassword $Password `
+                                -Enabled:$true `
+                                -PassThru -Credential $Credential
+
+                    $AdminComputerName = "LAPTOP-$AdminUsername"
+                    New-ADComputer  -Name $adminComputerName `
+                                    -Path "OU=$UsersOU,$DomainPath" `
+                                    -Credential $Credential
+
+                    Set-ADComputer  -Identity $AdminComputerName `
+                                    -Description "Computer of $AdminUsername" `
+                                    -UserPrincipalName $UserPrincipalName `
+                                    -Credential $Credential
+                }
             }
         }
     }
@@ -281,5 +282,4 @@ switch ($Argument)  {
         Stop-Transcript
     }
 }
-
-## EOF ## 
+## EOF ##
