@@ -41,8 +41,8 @@ $SharesParam = @(
     @{ShareName = "Technique"; SharePath="D:\Technique"; GroupRead="GP_Technique_READ"; GroupWrite="GP_Technique_WRITE"}
 )
 
-$DomainUsersOU = "OU=Domain Users"
-$DomainComputersOU = "OU=Domain Computers"
+$DomainUsersOUName = "Domain Users"
+$DomainComputersOUName = "Domain Computers"
 $Departments = @(
     @{OU = "Direction"; Prefix = "D"},
     @{OU = "Administration"; Prefix = "A"},
@@ -180,17 +180,25 @@ function Set-ADTopology {
     # Connect as domain admin
     $Credential = New-Object System.Management.Automation.PSCredential ($DomainAdminUsername, $DomainAdminPassword)
 
+    # Create OUs for domain users and computers
+    New-ADOrganizationalUnit -Name $DomainUsersOUName `
+                             -Path $DomainPath `
+                             -Credential $Credential
+    New-ADOrganizationalUnit -Name $DomainComputersOU `
+                             -Path $DomainPath `
+                             -Credential $Credential
+
     # Create users and computers in every OU
     foreach ($Department in $Departments) {
-        $UsersOU = "OU=$($Department.OU),$DomaineUsersOU,$DomainPath"
-        $ComputersOU = "OU=$($Department.OU),$DomaineComputersOU,$DomainPath"
+        $UsersOU = "OU=$($Department.OU),OU=$DomainUsersOUName,$DomainPath"
+        $ComputersOU = "OU=$($Department.OU),OU=$DomainComputersOUName,$DomainPath"
         $Prefix = $Department.Prefix
 
-        New-ADOrganizationalUnit -Name $Department.OU `
-                                 -Path "$DomaineUsersOU,$DomainPath" `
+        New-ADOrganizationalUnit -Name $($Department.OU) `
+                                 -Path "OU=$DomainUsersOUName,$DomainPath" `
                                  -Credential $Credential
-        New-ADOrganizationalUnit -Name $Department.OU `
-                                 -Path "$DomaineComputerssOU,$DomainPath" `
+        New-ADOrganizationalUnit -Name $($Department.OU) `
+                                 -Path "OU=$DomainComputersOUName,$DomainPath" `
                                  -Credential $Credential
 
         for ($i = 1; $i -le 5; $i++) {
@@ -260,8 +268,8 @@ function Set-ADTopology {
         try {
             New-Item -ItemType directory -Path $ShareDrive -Name $Share.ShareName
             New-SmbShare -Name $Share.ShareName `
-                        -Path $Share.SharePath `
-                        -FullAccess "Tout le monde"
+                         -Path $Share.SharePath `
+                         -FullAccess "Tout le monde"
         } catch {
             Write-Output "[ ERROR ] Failed to create shared directory : $($Share.ShareName)"
         }
