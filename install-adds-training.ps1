@@ -184,7 +184,7 @@ function Set-ADTopology {
     New-ADOrganizationalUnit -Name $DomainUsersOUName `
                              -Path $DomainPath `
                              -Credential $Credential
-    New-ADOrganizationalUnit -Name $DomainComputersOU `
+    New-ADOrganizationalUnit -Name $DomainComputersOUName `
                              -Path $DomainPath `
                              -Credential $Credential
 
