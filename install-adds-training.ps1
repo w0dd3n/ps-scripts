@@ -23,10 +23,34 @@ $ServerDnsSecondary = "1.1.1.1"
 $ShareDrive="D:\"
 
 # Domain Parameters
+$DomainAdminPassword = ConvertTo-SecureString "Azerty!1234" -AsPlainText -Force
+$LocalAdminPassword = ConvertTo-SecureString "Azerty!1234" -AsPlainText -Force
+
 $DomainNameDNS = "b3car.rns.aftec.fr"
 $DomainNameNetbios = "B3CAR-RNS"
 $SafeModeClearAdminPassword = "Azerty!1234"
 $SafeModeAdministratorPassword = ConvertTo-SecureString $SafeModeClearAdminPassword -AsPlaintext -Force:$true
+$DefaultUserPassword = ConvertTo-SecureString "Azerty!1234" -AsPlainText -Force
+
+$SharesParam = @(
+    @{ShareName = "Commun"; SharePath="D:\Commun"; GroupRead="GP_Commun_READ"; GroupWrite="GP_Commun_WRITE"},
+    @{ShareName = "Administration"; SharePath="D:\Administration"; GroupRead="GP_Admin_READ"; GroupWrite="GP_Admin_WRITE"},
+    @{ShareName = "Apprenants"; SharePath="D:\Apprenants"; GroupRead="GP_Apprenants_READ"; GroupWrite="GP_Apprenants_WRITE"},
+    @{ShareName = "Technique"; SharePath="D:\Technique"; GroupRead="GP_Technique_READ"; GroupWrite="GP_Technique_WRITE"}
+)
+
+$DomainUsersOU = "OU=Domain Users,$DomainPath"
+$DomainComputersOU = "OU=Domain Computers,$DomainPath"
+$Departments = @(
+    @{OU = "Direction"; Prefix = "D"},
+    @{OU = "Administration"; Prefix = "A"},
+    @{OU = "Pedagogie"; Prefix = "P"},
+    @{OU = "Apprenants"; Prefix = "E"},
+    @{OU = "Informatique"; Prefix = "I"}
+)
+$ITDepartmentName="Informatique"
+$ITDepartmentPrefix="I"
+
 
 ## SCRIPT CONFIGURATION PARAMETERS
 $CurrentDate = Get-Date -Format "ddMMyyyy"
@@ -132,6 +156,106 @@ function Install-ADDomainControler {
 function Set-ADTopology {
     Unregister-ScheduledTask -TaskName $TaskInstallName -Confirm:$false
 
+    $RequiredServices = Get-Service -Name ADWS, KDC, NetLogon, DNS
+    foreach ($service in $RequiredServices) {
+        if ($Service.Status -ne 'Running') {
+            Write-Output "[ ERROR ] Required service $($Service.Name) is NOT RUNNING"
+            Stop-Transcript
+            exit
+        } else {
+            Write-Output "[ INFO ] Required service $($Service.Name) is ready"
+        }
+    }
+
+    try {
+        Import-Module ActiveDirectory -ErrorAction Stop
+    } catch {
+        Write-Output "[ ERROR ] Failed to import AD Module"
+        Stop-Transcript
+        exit
+    }
+
+    # Connect as domain admin
+    $Credential = New-Object System.Management.Automation.PSCredential ($DomainAdminUsername, $DomainAdminPassword)
+
+    # Create users and computers in every OU
+    foreach ($Department in $Departments) {
+    $UsersOU = "$department.OU,$DomainUsersOU"
+    $ComputersOU = "$department.OU,$DomainComputersOU"
+    $Prefix = $Department.Prefix
+
+    for ($i = 1; $i -le 5; $i++) {
+        $Username = "$Prefix-User$i"
+        $Firstname = "$Prefix User $i"
+        $Lastname = "$Department.OU"
+        $UserPrincipalName = "$Username@$DomainName"
+        $Password = $DefaultUserPassword
+
+        New-ADUser  -SamAccountName $Username `
+                    -UserPrincipalName $UserPrincipalName `
+                    -Name "$Firstname $Lastname" `
+                    -GivenName $Firstname `
+                    -Surname $Lastname `
+                    -Path $UsersOU `
+                    -AccountPassword $Password `
+                    -Enabled:$true `
+                    -PassThru -Credential $Credential
+
+        # Create a computer for each user (computer name = "LAPTOP-<username>")
+        $ComputerName = "LAPTOP-$username"
+        New-ADComputer  -Name $ComputerName `
+                        -Path "OU=$ComputersOU,$DomainPath" `
+                        -Credential $Credential
+
+        Set-ADComputer  -Identity $ComputerName `
+                        -Description "Computer of $Username" `
+                        -UserPrincipalName $UserPrincipalName `
+                        -Credential $Credential
+
+        # Prepare specific admin accounts for IT department
+        if ($OU -eq $ITDepartmentName) {
+            for ($i = 1; $i -le 5; $i++) {
+                $AdminUsername = "ITAdmin$i"
+                $Firstname = "$ITDepartmentName Admin $i"
+                $Lastname = "$ITDepartmentName"
+                $UserPrincipalName = "$AdminUsername@$DomainName"
+                $Password = $LocalAdminPassword
+
+                New-ADUser  -SamAccountName $AdminUsername `
+                            -UserPrincipalName $UserPrincipalName `
+                            -Name "$Firstname $Lastname" `
+                            -GivenName $Firstname `
+                            -Surname $Lastname `
+                            -Path "OU=$UsersOU,$DomainPath" `
+                            -AccountPassword $Password `
+                            -Enabled:$true `
+                            -PassThru -Credential $Credential
+
+                $AdminComputerName = "LAPTOP-$AdminUsername"
+                New-ADComputer  -Name $adminComputerName `
+                                -Path "OU=$UsersOU,$DomainPath" `
+                                -Credential $Credential
+
+                Set-ADComputer  -Identity $AdminComputerName `
+                                -Description "Computer of $AdminUsername" `
+                                -UserPrincipalName $UserPrincipalName `
+                                -Credential $Credential
+            }
+        }
+    }
+
+    # Create shared directories and prepare shares with default access
+    foreach ($Share in $SharesParam) {
+        try {
+            New-Item -ItemType directory -Path $ShareDrive -Name $Share.ShareName
+            New-SmbShare -Name $Share.ShareName `
+                        -Path $Share.SharePath `
+                        -FullAccess "Tout le monde"
+        } catch {
+            Write-Output "[ ERROR ] Failed to create shared directory : $($Share.ShareName)"
+        }
+    }
+
     Write-Output "TODO - To be continued"
 
     Stop-Transcript
@@ -158,3 +282,4 @@ switch ($Argument)  {
     }
 }
 
+## EOF ## 
