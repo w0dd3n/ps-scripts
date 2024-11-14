@@ -182,14 +182,14 @@ function Set-ADTopology {
 
     # Create users and computers in every OU
     foreach ($Department in $Departments) {
-        $UsersOU = "$Department.OU,$DomainUsersOU"
-        $ComputersOU = "$Department.OU,$DomainComputersOU"
+        $UsersOU = "$($Department.OU),$DomainUsersOU"
+        $ComputersOU = "$($Department.OU),$DomainComputersOU"
         $Prefix = $Department.Prefix
 
         for ($i = 1; $i -le 5; $i++) {
             $Username = "$Prefix-User$i"
             $Firstname = "$Prefix User $i"
-            $Lastname = "$Department.OU"
+            $Lastname = "$($Department.OU)"
             $UserPrincipalName = "$Username@$DomainName"
             $Password = $DefaultUserPassword
 
@@ -204,7 +204,7 @@ function Set-ADTopology {
                         -PassThru -Credential $Credential
 
             # Create a computer for each user (computer name = "LAPTOP-<username>")
-            $ComputerName = "LAPTOP-$username"
+            $ComputerName = "LAPTOP-$Username"
             New-ADComputer  -Name $ComputerName `
                             -Path "OU=$ComputersOU,$DomainPath" `
                             -Credential $Credential
@@ -215,7 +215,7 @@ function Set-ADTopology {
                             -Credential $Credential
 
             # Prepare specific admin accounts for IT department
-            if ($OU -eq $ITDepartmentName) {
+            if ($Department.OU -eq $ITDepartmentName) {
                 for ($i = 1; $i -le 5; $i++) {
                     $AdminUsername = "ITAdmin$i"
                     $Firstname = "$ITDepartmentName Admin $i"
