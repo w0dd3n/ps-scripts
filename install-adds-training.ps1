@@ -23,6 +23,7 @@ $ServerDnsSecondary = "1.1.1.1"
 $ShareDrive="D:\"
 
 # Domain Parameters
+$DomainAdminUsername = "Administrateur"
 $DomainAdminPassword = ConvertTo-SecureString "Azerty!1234" -AsPlainText -Force
 $LocalAdminPassword = ConvertTo-SecureString "Azerty!1234" -AsPlainText -Force
 
@@ -181,8 +182,8 @@ function Set-ADTopology {
 
     # Create users and computers in every OU
     foreach ($Department in $Departments) {
-        $UsersOU = "$department.OU,$DomainUsersOU"
-        $ComputersOU = "$department.OU,$DomainComputersOU"
+        $UsersOU = "$Department.OU,$DomainUsersOU"
+        $ComputersOU = "$Department.OU,$DomainComputersOU"
         $Prefix = $Department.Prefix
 
         for ($i = 1; $i -le 5; $i++) {
@@ -266,19 +267,21 @@ function Set-ADTopology {
 ## MAIN SCRIPT CORE SECTION
 ##
 
-Start-Transcript -Path $ScriptLogfilePath -Append -IncludeInvocationHeader
-
 switch ($Argument)  {
     "Setenv" {
+        Start-Transcript -Path $ScriptLogfilePath -Append -IncludeInvocationHeader
         Set-ServerEnvironment
     }
     "Install" {
+        Start-Transcript -Path $ScriptLogfilePath -Append
         Install-ADDomainControler
     }
     "Config" {
+        Start-Transcript -Path $ScriptLogfilePath -Append
         Set-ADTopology
     }
     default {
+        Start-Transcript -Path $ScriptLogfilePath -Append -IncludeInvocationHeader
         Write-Output "[ ERROR ] Valid argument list : 'Setenv','Install','Config'"
         Stop-Transcript
     }
