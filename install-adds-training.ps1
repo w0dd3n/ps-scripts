@@ -158,13 +158,11 @@ function Set-ADTopology {
 
     $RequiredServices = Get-Service -Name ADWS, KDC, NetLogon, DNS
     foreach ($service in $RequiredServices) {
-        if ($Service.Status -ne 'Running') {
-            Write-Output "[ ERROR ] Required service $($Service.Name) is NOT RUNNING"
-            Stop-Transcript
-            exit
-        } else {
-            Write-Output "[ INFO ] Required service $($Service.Name) is ready"
+        while ($Service.Status -ne 'Running') {
+            Write-Output "[ WARNING ] Waiting service $($Service.Name) to start"
+            Start-Sleep -Seconds 5
         }
+        Write-Output "[ INFO ] Required service $($Service.Name) is ready"
     }
 
     try {
