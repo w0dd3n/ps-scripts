@@ -267,11 +267,8 @@ function Set-ADTopology {
         }
     }
 
+    Write-Output "[ INFO ] Training Server Setup COMPLETED"
     Stop-Transcript
-
-    Add-Type -AssemblyName System.Windows.Forms
-    [System.Windows.Forms.MessageBox]::Show("Training Server Setup COMPLETED", "INFORMATION", [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Information)
-
 }
 
 ## MAIN SCRIPT CORE SECTION
