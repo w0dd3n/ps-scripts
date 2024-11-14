@@ -186,6 +186,10 @@ function Set-ADTopology {
         $ComputersOU = "$($Department.OU),$DomainComputersOU"
         $Prefix = $Department.Prefix
 
+        New-ADOrganizationalUnit -Name $Department.OU `
+                                 -Path $DomainPath `
+                                 -Credential $Credential
+
         for ($i = 1; $i -le 5; $i++) {
             $Username = "$Prefix-User$i"
             $Firstname = "$Prefix User $i"
