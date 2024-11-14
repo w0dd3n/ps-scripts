@@ -41,8 +41,8 @@ $SharesParam = @(
     @{ShareName = "Technique"; SharePath="D:\Technique"; GroupRead="GP_Technique_READ"; GroupWrite="GP_Technique_WRITE"}
 )
 
-$DomainUsersOU = "OU=Domain Users,$DomainPath"
-$DomainComputersOU = "OU=Domain Computers,$DomainPath"
+$DomainUsersOU = "OU=Domain Users"
+$DomainComputersOU = "OU=Domain Computers"
 $Departments = @(
     @{OU = "Direction"; Prefix = "D"},
     @{OU = "Administration"; Prefix = "A"},
@@ -182,12 +182,15 @@ function Set-ADTopology {
 
     # Create users and computers in every OU
     foreach ($Department in $Departments) {
-        $UsersOU = "$($Department.OU),$DomainUsersOU"
-        $ComputersOU = "$($Department.OU),$DomainComputersOU"
+        $UsersOU = "OU=$($Department.OU),$DomaineUsersOU,$DomainPath"
+        $ComputersOU = "OU=$($Department.OU),$DomaineComputersOU,$DomainPath"
         $Prefix = $Department.Prefix
 
         New-ADOrganizationalUnit -Name $Department.OU `
-                                 -Path $DomainPath `
+                                 -Path "$DomaineUsersOU,$DomainPath" `
+                                 -Credential $Credential
+        New-ADOrganizationalUnit -Name $Department.OU `
+                                 -Path "$DomaineComputerssOU,$DomainPath" `
                                  -Credential $Credential
 
         for ($i = 1; $i -le 5; $i++) {
@@ -202,15 +205,16 @@ function Set-ADTopology {
                         -Name "$Firstname $Lastname" `
                         -GivenName $Firstname `
                         -Surname $Lastname `
+                        -Department $($Department.OU) `
                         -Path $UsersOU `
                         -AccountPassword $Password `
-                        -Enabled:$true `
+                        -Enabled $True `
                         -PassThru -Credential $Credential
 
             # Create a computer for each user (computer name = "LAPTOP-<username>")
             $ComputerName = "LAPTOP-$Username"
             New-ADComputer  -Name $ComputerName `
-                            -Path "OU=$ComputersOU,$DomainPath" `
+                            -Path "$ComputersOU,$DomainPath" `
                             -Credential $Credential
 
             Set-ADComputer  -Identity $ComputerName `
@@ -232,14 +236,14 @@ function Set-ADTopology {
                                 -Name "$Firstname $Lastname" `
                                 -GivenName $Firstname `
                                 -Surname $Lastname `
-                                -Path "OU=$UsersOU,$DomainPath" `
+                                -Path "$UsersOU,$DomainPath" `
                                 -AccountPassword $Password `
-                                -Enabled:$true `
+                                -Enabled $True `
                                 -PassThru -Credential $Credential
 
                     $AdminComputerName = "LAPTOP-$AdminUsername"
                     New-ADComputer  -Name $adminComputerName `
-                                    -Path "OU=$ComputersOU,$DomainPath" `
+                                    -Path "$ComputersOU,$DomainPath" `
                                     -Credential $Credential
 
                     Set-ADComputer  -Identity $AdminComputerName `
