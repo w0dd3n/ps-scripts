@@ -28,6 +28,7 @@ $LocalAdminPassword = ConvertTo-SecureString "Azerty!1234" -AsPlainText -Force
 
 $DomainNameDNS = "b3car.rns.aftec.fr"
 $DomainNameNetbios = "B3CAR-RNS"
+$DomainPath = "DC=$($DomainNameDNS.Split('.') -join ',DC=')"
 $SafeModeClearAdminPassword = "Azerty!1234"
 $SafeModeAdministratorPassword = ConvertTo-SecureString $SafeModeClearAdminPassword -AsPlaintext -Force:$true
 $DefaultUserPassword = ConvertTo-SecureString "Azerty!1234" -AsPlainText -Force
@@ -55,6 +56,7 @@ $ITDepartmentPrefix="I"
 ## SCRIPT CONFIGURATION PARAMETERS
 $CurrentDate = Get-Date -Format "ddMMyyyy"
 $ScriptLogfilePath = "C:\ADConfig_$CurrentDate.log"
+$PSCommandPath = $MyInvocation.MyCommand.Path
 
 $TaskAction = New-ScheduledTaskAction -Execute "Powershell.exe" -Argument "-File $PSCommandPath -Argument Install"
 $TaskTrigger = New-ScheduledTaskTrigger -AtStartup
@@ -232,7 +234,7 @@ function Set-ADTopology {
 
                     $AdminComputerName = "LAPTOP-$AdminUsername"
                     New-ADComputer  -Name $adminComputerName `
-                                    -Path "OU=$UsersOU,$DomainPath" `
+                                    -Path "OU=$ComputersOU,$DomainPath" `
                                     -Credential $Credential
 
                     Set-ADComputer  -Identity $AdminComputerName `
