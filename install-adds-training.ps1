@@ -157,10 +157,11 @@ function Set-ADTopology {
     Unregister-ScheduledTask -TaskName $TaskInstallName -Confirm:$false
 
     $RequiredServices = Get-Service -Name ADWS, KDC, NetLogon, DNS
-    foreach ($service in $RequiredServices) {
+    foreach ($Service in $RequiredServices) {
         while ($Service.Status -ne 'Running') {
             Write-Output "[ WARNING ] Waiting service $($Service.Name) to start"
             Start-Sleep -Seconds 5
+            $Service = Get-Service -Name $Service.Name
         }
         Write-Output "[ INFO ] Required service $($Service.Name) is ready"
     }
