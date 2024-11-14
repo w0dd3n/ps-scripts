@@ -222,12 +222,8 @@ function Set-ADTopology {
             # Create a computer for each user (computer name = "LAPTOP-<username>")
             $ComputerName = "LAPTOP-$Username"
             New-ADComputer  -Name $ComputerName `
-                            -Path $ComputersOU `
-                            -Credential $Credential
-
-            Set-ADComputer  -Identity $ComputerName `
                             -Description "Computer of $Username" `
-                            -UserPrincipalName $UserPrincipalName `
+                            -Path $ComputersOU `
                             -Credential $Credential
 
             # Prepare specific admin accounts for IT department
@@ -251,12 +247,8 @@ function Set-ADTopology {
 
                     $AdminComputerName = "LAPTOP-$AdminUsername"
                     New-ADComputer  -Name $AdminComputerName `
-                                    -Path $ComputersOU `
-                                    -Credential $Credential
-
-                    Set-ADComputer  -Identity $AdminComputerName `
                                     -Description "Computer of $AdminUsername" `
-                                    -UserPrincipalName $UserPrincipalName `
+                                    -Path $ComputersOU `
                                     -Credential $Credential
                 }
             }
